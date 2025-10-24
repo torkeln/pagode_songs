@@ -8,9 +8,6 @@ fs = import('fs')
 # Find perl interpreter
 perl = find_program('perl')
 
-# Define ChordPro script path
-chordpro_script = meson.current_source_dir() / 'chordpro/script/chordpro.pl'
-
 # Define configuration files
 guitar_config = meson.current_source_dir() / 'chordpro/lib/ChordPro/res/config/guitar.json'
 mandolin_config = meson.current_source_dir() / 'chordpro/lib/ChordPro/res/config/mandolin-ly.json'
@@ -37,7 +34,7 @@ foreach chordpro_file : chordpro_files
   custom_target(basename + '_guitar',
     input : chordpro_file,
     output : basename + '_guitar.pdf',
-    command : [perl, chordpro_script, '--config', guitar_config, '--output', '@OUTPUT@', '@INPUT@'],
+    command : ['chordpro', '--config', guitar_config, '--output', '@OUTPUT@', '@INPUT@'],
     build_by_default : true,
     install : false
   )
@@ -46,7 +43,7 @@ foreach chordpro_file : chordpro_files
   custom_target(basename + '_mandolin',
     input : chordpro_file,
     output : basename + '_mandolin.pdf',
-    command : [perl, chordpro_script, '--config', mandolin_config, '--output', '@OUTPUT@', '@INPUT@'],
+    command : ['chordpro', '--config', mandolin_config, '--output', '@OUTPUT@', '@INPUT@'],
     build_by_default : true,
     install : false
   )
@@ -55,7 +52,7 @@ foreach chordpro_file : chordpro_files
   custom_target(basename + '_cavaquinho',
     input : chordpro_file,
     output : basename + '_cavaquinho.pdf',
-    command : [perl, chordpro_script, '--config', cavaquinho_config, '--output', '@OUTPUT@', '@INPUT@'],
+    command : ['chordpro', '--config', cavaquinho_config, '--output', '@OUTPUT@', '@INPUT@'],
     build_by_default : true,
     install : false
   )
