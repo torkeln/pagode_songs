@@ -1,0 +1,86 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for release'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y perl meson ninja-build
+        
+    - name: Install ChordPro
+      run: |
+        sudo cpan App::Music::ChordPro
+        
+    - name: Build songbook
+      run: |
+        meson setup builddir
+        meson compile -C builddir
+        
+    - name: Create release package
+      run: |
+        mkdir -p release
+        cp builddir/*.pdf release/
+        cp song_book_pagode.cho release/
+        cp cavaquinho_dgbd.json release/
+        cp README.md release/
+        
+        # Create a zip file
+        cd release
+        zip -r ../songbook-release.zip *
+        cd ..
+        
+    - name: Get tag name
+      id: tag
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "tag_name=${{ github.event.inputs.tag_name }}" >> $GITHUB_OUTPUT
+        else
+          echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.tag.outputs.tag_name }}
+        name: Songbook Release ${{ steps.tag.outputs.tag_name }}
+        draft: false
+        prerelease: false
+        files: |
+          songbook-release.zip
+          builddir/*.pdf
+        body: |
+          ## ChordPro Songbook Release
+          
+          This release contains:
+          - **Guitar PDFs** - Standard EADGBE tuning
+          - **Mandolin PDFs** - GDAE tuning  
+          - **Cavaquinho PDFs** - Brazilian DGBD tuning
+          - **Source files** - ChordPro .cho files and configurations
+          
+          ### Songs included:
+          - Canta Canta Minha Gente
+          - Cheia de Manias (Raça Negra)
+          - Marinheiro Só (Traditional)
+          - Deidres Samba
+          - Somliga Går Med Trasiga Skor
+          
+          Generated automatically with ChordPro and Meson build system.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

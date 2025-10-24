@@ -1,0 +1,70 @@
+name: Build ChordPro Songbook
+
+on:
+  push:
+    branches: [ main, master ]
+    paths: 
+      - '**.cho'
+      - 'meson.build'
+      - 'cavaquinho_dgbd.json'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - '**.cho'
+      - 'meson.build'
+      - 'cavaquinho_dgbd.json'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  build-pdfs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y perl meson ninja-build
+        
+    - name: Install ChordPro
+      run: |
+        # Install ChordPro from CPAN
+        sudo cpan App::Music::ChordPro
+        
+    - name: Setup build directory
+      run: |
+        meson setup builddir
+        
+    - name: Build songbook PDFs
+      run: |
+        meson compile -C builddir
+        
+    - name: List generated files
+      run: |
+        echo "Generated PDFs:"
+        ls -la builddir/*.pdf
+        
+    - name: Upload PDF artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: songbook-pdfs
+        path: builddir/*.pdf
+        retention-days: 30
+        
+    - name: Generate PNG images (if needed)
+      run: |
+        sudo apt-get install -y poppler-utils
+        mkdir -p images
+        for pdf in builddir/*.pdf; do
+          filename=$(basename "$pdf" .pdf)
+          pdftoppm "$pdf" "images/$filename" -png
+        done
+        
+    - name: Upload PNG artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: songbook-images
+        path: images/*.png
+        retention-days: 30

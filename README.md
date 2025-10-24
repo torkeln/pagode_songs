@@ -1,145 +1,117 @@
-# ChordPro Songbook Build System
+# ChordPro Songbook - Pagode Songs
 
-This Meson-based build system automatically generates ChordPro PDFs for multiple instruments from `.cho` source files.
+A collection of Brazilian pagode and Swedish songs formatted for ChordPro with support for multiple instruments.
 
-## Features
+## Instruments Supported
 
-- **Multi-instrument support**: Guitar, Mandolin, and Cavaquinho (DGBD tuning)
-- **Automatic dependency detection**: Only builds from existing `.cho` files
-- **Professional chord diagrams**: Instrument-specific fingerings and tunings
-- **PNG conversion**: Optional image generation from PDFs
+- **Guitar** - Standard EADGBE tuning
+- **Mandolin** - GDAE tuning  
+- **Cavaquinho** - Brazilian DGBD tuning
 
-## Supported Instruments
+## Songs Included
 
-| Instrument | Tuning | Configuration |
-|------------|--------|---------------|
-| **Guitar** | EADGBE | Standard 6-string guitar |
-| **Mandolin** | GDAE | 4-string mandolin |
-| **Cavaquinho** | DGBD | Brazilian cavaquinho tuning |
+1. **Canta Canta Minha Gente** - Traditional Brazilian
+2. **Cheia de Manias** - Raça Negra
+3. **Marinheiro Só** - Traditional
+4. **Deidres Samba** - Cornelis Vreeswijk
+5. **Somliga Går Med Trasiga Skor** - Cornelis Vreeswijk
 
-## Quick Start
+## Building Locally
 
-### 1. Prerequisites
+### Prerequisites
+- Perl with ChordPro installed
+- Meson build system
+- Ninja build backend
 
+### Install ChordPro
 ```bash
-# Required
-sudo apt install meson ninja-build perl
-
-# Optional (for PNG generation)
-sudo apt install poppler-utils
+cpan App::Music::ChordPro
 ```
 
-### 2. Build Setup
-
+### Build PDFs
 ```bash
-# Setup build directory
-meson setup builddir
-
-# Build all PDFs
-meson compile -C builddir
-```
-
-### 3. Build Results
-
-Generated PDFs will be in the `builddir/` directory:
-
-- `song_book_pagode_standard.pdf` - Standard formatting
-- `song_book_pagode_guitar.pdf` - Guitar chord diagrams
-- `song_book_pagode_mandolin.pdf` - Mandolin chord diagrams
-- `song_book_pagode_cavaquinho.pdf` - Cavaquinho chord diagrams
-
-## Advanced Usage
-
-### Build Specific Targets
-
-```bash
-# Build only guitar version
-meson compile -C builddir song_book_pagode_guitar
-
-# Build only mandolin version
-meson compile -C builddir song_book_pagode_mandolin
-
-# Build only cavaquinho version
-meson compile -C builddir song_book_pagode_cavaquinho
-```
-
-### Clean Build
-
-```bash
-# Remove build directory
-rm -rf builddir
-
-# Rebuild from scratch
 meson setup builddir
 meson compile -C builddir
 ```
 
-## Files Structure
+Generated PDFs will be in `builddir/`:
+- `song_book_pagode_guitar.pdf`
+- `song_book_pagode_mandolin.pdf`
+- `song_book_pagode_cavaquinho.pdf`
+
+### Generate PNG Images
+```bash
+./generate_png.sh
+```
+
+## GitHub Actions - Automated Building
+
+This repository uses GitHub Actions for automated building:
+
+### Automatic Builds
+- **Triggers**: Push to main/master, pull requests, manual dispatch
+- **Builds**: PDFs for all instruments
+- **Artifacts**: Downloadable PDFs and PNG images (30-day retention)
+
+### Creating Releases
+```bash
+# Tag and push for automatic release
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+### Manual Builds
+1. Go to **Actions** tab in GitHub
+2. Select "Build ChordPro Songbook" 
+3. Click "Run workflow"
+
+## File Structure
 
 ```
 .
-├── meson.build                    # Build configuration
-├── song_book_pagode.cho           # Source ChordPro file
+├── song_book_pagode.cho          # Main songbook source
 ├── cavaquinho_dgbd.json          # Custom cavaquinho config
-├── generate_png.sh               # PNG conversion script
-├── builddir/                     # Generated PDFs
-└── chordpro/                     # ChordPro source code
+├── meson.build                   # Build system configuration
+├── generate_png.sh               # PNG conversion utility
+├── .github/workflows/            # GitHub Actions
+│   ├── build-songbook.yml        # Automatic PDF building
+│   └── release.yml               # Release creation
+└── builddir/                     # Generated PDFs
+    ├── song_book_pagode_guitar.pdf
+    ├── song_book_pagode_mandolin.pdf
+    └── song_book_pagode_cavaquinho.pdf
 ```
 
-## Adding New Songs
+## ChordPro Format
 
-1. Create a new `.cho` file in the root directory
-2. Update `meson.build` to include the new file:
+Songs use standard ChordPro format with proper metadata:
 
-```meson
-if fs.exists('your_new_song.cho')
-  chordpro_files += 'your_new_song.cho'
-  message('Found: your_new_song.cho')
-endif
+```chordpro
+{new_song}
+{title: Song Title}
+{artist: Artist Name}
+{key: Am}
+
+{start_of_verse}
+[Am]Lyrics with [G]chords [C]above [Am]words
+{end_of_verse}
+
+{start_of_chorus}
+[F]Chorus [C]lyrics [G]here [Am]
+{end_of_chorus}
 ```
 
-3. Rebuild:
+## Custom Cavaquinho Configuration
 
-```bash
-meson compile -C builddir
-```
+The Brazilian cavaquinho uses DGBD tuning (D4-G4-B4-D5) with custom chord fingerings optimized for this tuning. All common chords including minor 7th variations are supported.
 
-## Customization
+## Contributing
 
-### Chord Diagrams
-
-- **Guitar**: Uses standard ChordPro guitar configuration
-- **Mandolin**: Uses ChordPro mandolin-ly configuration
-- **Cavaquinho**: Uses custom DGBD tuning configuration
-
-### Output Formats
-
-The build system currently supports:
-- PDF (primary format)
-- PNG (via optional conversion script)
-
-## Troubleshooting
-
-### Common Issues
-
-**"No ChordPro files found"**
-- Ensure `.cho` files exist in the root directory
-- Check that filenames match those in `meson.build`
-
-**"perl not found"**
-- Install Perl: `sudo apt install perl`
-
-**"pdftoppm not found"**
-- Install poppler-utils: `sudo apt install poppler-utils`
-
-### Build Logs
-
-Check build logs for detailed error information:
-```bash
-cat builddir/meson-logs/meson-log.txt
-```
+1. Edit `.cho` files with proper ChordPro formatting
+2. Test builds locally with `meson compile -C builddir`
+3. Commit and push - GitHub Actions will build automatically
+4. Create releases with git tags for distribution
 
 ## License
 
-This build system is provided as-is for generating ChordPro songbooks.
-ChordPro software is subject to its own licensing terms.
+Song arrangements and chord progressions for educational use.
