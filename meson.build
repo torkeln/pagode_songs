@@ -34,7 +34,7 @@ foreach chordpro_file : chordpro_files
   custom_target(basename + '_guitar',
     input : chordpro_file,
     output : basename + '_guitar.pdf',
-    command : ['chordpro', '--config', guitar_config, '--output', '@OUTPUT@', '@INPUT@'],
+    command : ['chordpro', '--output', '@OUTPUT@', '@INPUT@'],
     build_by_default : true,
     install : false
   )
@@ -43,7 +43,7 @@ foreach chordpro_file : chordpro_files
   custom_target(basename + '_mandolin',
     input : chordpro_file,
     output : basename + '_mandolin.pdf',
-    command : ['chordpro', '--config', mandolin_config, '--output', '@OUTPUT@', '@INPUT@'],
+    command : ['chordpro', '--define', 'instrument.type=mandolin-ly', '--output', '@OUTPUT@', '@INPUT@'],
     build_by_default : true,
     install : false
   )
