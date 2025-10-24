@@ -1,0 +1,3 @@
+[submodule "chordpro"]
+	path = chordpro
+	url = https://github.com/ChordPro/chordpro
