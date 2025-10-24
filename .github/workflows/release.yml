@@ -71,7 +71,7 @@ jobs:
         ls -la builddir/*.pdf 2>/dev/null || echo "No PDF files found"
         
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ steps.tag.outputs.tag_name }}
         name: Songbook Release ${{ steps.tag.outputs.tag_name }}
