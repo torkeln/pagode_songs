@@ -39,11 +39,20 @@ jobs:
         cp builddir/*.pdf release/
         cp song_book_pagode.cho release/
         cp cavaquinho_dgbd.json release/
-        cp README.md release/
+        cp README.md release/ 2>/dev/null || echo "README.md not found, skipping"
         
-        # Create a zip file
+        # Create individual instrument packages
+        mkdir -p release/guitar release/mandolin release/cavaquinho
+        cp builddir/*guitar*.pdf release/guitar/ 2>/dev/null || true
+        cp builddir/*mandolin*.pdf release/mandolin/ 2>/dev/null || true  
+        cp builddir/*cavaquinho*.pdf release/cavaquinho/ 2>/dev/null || true
+        
+        # Create zip packages
         cd release
-        zip -r ../songbook-release.zip *
+        zip -r ../songbook-complete.zip *
+        [ -f guitar/*.pdf ] && zip -r ../songbook-guitar.zip guitar/*.pdf song_book_pagode.cho
+        [ -f mandolin/*.pdf ] && zip -r ../songbook-mandolin.zip mandolin/*.pdf song_book_pagode.cho  
+        [ -f cavaquinho/*.pdf ] && zip -r ../songbook-cavaquinho.zip cavaquinho/*.pdf song_book_pagode.cho cavaquinho_dgbd.json
         cd ..
         
     - name: Get tag name
@@ -55,6 +64,12 @@ jobs:
           echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
         fi
         
+    - name: List release files
+      run: |
+        echo "Release files to be uploaded:"
+        ls -la *.zip 2>/dev/null || echo "No zip files found"
+        ls -la builddir/*.pdf 2>/dev/null || echo "No PDF files found"
+        
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
@@ -63,24 +78,48 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          songbook-release.zip
-          builddir/*.pdf
+          songbook-complete.zip
+          songbook-guitar.zip
+          songbook-mandolin.zip  
+          songbook-cavaquinho.zip
+          builddir/song_book_pagode_guitar.pdf
+          builddir/song_book_pagode_mandolin.pdf
+          builddir/song_book_pagode_cavaquinho.pdf
         body: |
-          ## ChordPro Songbook Release
+          ## ChordPro Songbook Release ${{ steps.tag.outputs.tag_name }}
           
-          This release contains:
-          - **Guitar PDFs** - Standard EADGBE tuning
-          - **Mandolin PDFs** - GDAE tuning  
-          - **Cavaquinho PDFs** - Brazilian DGBD tuning
-          - **Source files** - ChordPro .cho files and configurations
+          ### 📁 Release Contents
           
-          ### Songs included:
-          - Canta Canta Minha Gente
-          - Cheia de Manias (Raça Negra)
-          - Marinheiro Só (Traditional)
-          - Deidres Samba
-          - Somliga Går Med Trasiga Skor
+          **Individual PDFs:**
+          - `song_book_pagode_guitar.pdf` - Guitar version (EADGBE tuning)
+          - `song_book_pagode_mandolin.pdf` - Mandolin version (GDAE tuning)  
+          - `song_book_pagode_cavaquinho.pdf` - Cavaquinho version (Brazilian DGBD tuning)
           
-          Generated automatically with ChordPro and Meson build system.
+          **Package Downloads:**
+          - `songbook-complete.zip` - All PDFs + source files + configurations
+          - `songbook-guitar.zip` - Guitar PDF + ChordPro source
+          - `songbook-mandolin.zip` - Mandolin PDF + ChordPro source
+          - `songbook-cavaquinho.zip` - Cavaquinho PDF + source + custom config
+          
+          ### 🎵 Songs Included
+          - **Canta Canta Minha Gente** - Traditional Brazilian
+          - **Cheia de Manias** - Raça Negra  
+          - **Marinheiro Só** - Traditional
+          - **Deidres Samba** - Cornelis Vreeswijk
+          - **Somliga Går Med Trasiga Skor** - Cornelis Vreeswijk
+          
+          ### 🎸 Instrument Features
+          - **Guitar**: Standard 6-string chord diagrams
+          - **Mandolin**: 4-string GDAE tuning with proper fingerings
+          - **Cavaquinho**: Authentic Brazilian DGBD tuning with complete chord library
+          
+          ### 🔧 Technical Details
+          - Generated with ChordPro and Meson build system
+          - Professional chord diagrams and formatting
+          - Multi-language support (Portuguese/Swedish)
+          - Minor 7th chords included for all instruments
+          
+          ---
+          *Built automatically with GitHub Actions CI/CD*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
