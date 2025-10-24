@@ -9,7 +9,7 @@ fs = import('fs')
 perl = find_program('perl')
 
 # Define ChordPro script path
-chordpro_script = meson.current_source_dir() / 'chordpro/script/chordpro'
+chordpro_script = meson.current_source_dir() / 'chordpro/script/chordpro.pl'
 
 # Define configuration files
 guitar_config = meson.current_source_dir() / 'chordpro/lib/ChordPro/res/config/guitar.json'
