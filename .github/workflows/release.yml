@@ -26,7 +26,7 @@ jobs:
         
     - name: Install ChordPro
       run: |
-        sudo cpan App::Music::ChordPro
+        sudo cpan -T App::Music::ChordPro
         
     - name: Build songbook
       run: |
